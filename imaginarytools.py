@@ -7,7 +7,6 @@ import os
 useMock = False
 openai.api_key = os.getenv('OPENAI_KEY')
 model = "gpt-3.5-turbo"
-previous_ideas="GyroGrip"
 num_images = 1
 image_size = "1024x1024"
 
@@ -18,6 +17,18 @@ response_message_mock = """
 """
 
 mock_image_url = "https://i.imgur.com/NWWQIXz.jpeg"
+
+def read_used_titles():
+    with open('used_titles.txt') as f:
+        line = f.readline()
+        f.close()
+    line = line.rstrip('\n')
+    return line
+
+def save_used_title(titles):
+    file1 = open("used_titles.txt", "w")
+    file1.write(f"{titles}")
+    file1.close()
 
 def completeChat(messages):
     if useMock:
@@ -58,7 +69,7 @@ def save_url_to_file(url, filename):
 #########################################################
 #main
 #########################################################
-
+previous_ideas = read_used_titles()
 prompt = f"""Create the name of an imaginary tool excluding the ideas {previous_ideas}.  Then create a 400 character or less
 description of what that tool looks like and a blog article about that tool and
 return them following the json format below:
@@ -82,6 +93,8 @@ tool_article = jsonResponse['article']
 print(f"Name: {tool_name}")
 print(f"Summary: {tool_summary}")
 print(f"Article: {tool_article}")
+
+save_used_title(f"{previous_ideas}, {tool_name}")
 
 #generate image
 image_urls = generate_image_urls(tool_summary, num_images)
