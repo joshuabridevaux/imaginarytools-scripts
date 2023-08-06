@@ -9,6 +9,7 @@ openai.api_key = os.getenv('OPENAI_KEY')
 model = "gpt-3.5-turbo"
 num_images = 1
 image_size = "1024x1024"
+current_datetime = datetime.now()
 
 response_message_mock = """
 {"name": "EcoGauge",
@@ -21,7 +22,6 @@ mock_image_url = "https://i.imgur.com/NWWQIXz.jpeg"
 def read_used_titles():
     with open('used_titles.txt') as f:
         line = f.readline()
-        f.close()
     line = line.rstrip('\n')
     return line
 
@@ -65,6 +65,25 @@ def save_url_to_file(url, filename):
     with open(f"{filename}", 'wb') as handler:
         handler.write(img_data)
 
+def create_post(publish_date, title, image_name, article_text):
+    date_text = current_datetime.strftime("%Y-%m-%d")
+    filename = f"{date_text}-{title}.md"
+    first_sentence = article_text.partition('\n')[0]
+    remaining_body = article_text.split("\n",2)[2]
+    with open(f"{filename}", 'w') as handler:
+        handler.write("---\n")
+        handler.write(f"layout: default\n")
+        handler.write(f"title: {title}\n")
+        handler.write(f"date: {date_text}\n")
+        handler.write(f"author: AI\n")
+        handler.write("---\n")
+        handler.write("\n")
+        handler.write(f"# {first_sentence}\n")
+        handler.write("\n")
+        handler.write(f"![{title}](/imaginarytools/assets/{image_name})\n")
+        handler.write("\n")
+        handler.write(f"{remaining_body}\n")
+
 
 #########################################################
 #main
@@ -99,7 +118,7 @@ save_used_title(f"{previous_ideas}, {tool_name}")
 #generate image
 image_urls = generate_image_urls(tool_summary, num_images)
 
-filenames = []
-for x in range(num_images):
-    filenames.append(f"{datetime.now()}.jpg")
-    save_url_to_file(image_urls[x], filenames[x])
+image_filename = (f"{current_datetime}.jpg")
+save_url_to_file(image_urls[0], image_filename)
+
+create_post(current_datetime, tool_name, image_filename, tool_article)
